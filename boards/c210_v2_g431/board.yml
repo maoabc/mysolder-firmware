@@ -1,0 +1,6 @@
+board:
+  name: c210_v2_g431
+  full_name: "C210 V2 G431 Custom Board"
+  vendor: mao
+  socs:
+    - name: stm32g431xx

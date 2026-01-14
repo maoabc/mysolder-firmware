@@ -1,0 +1,356 @@
+
+/dts-v1/;
+#include <st/g4/stm32g431Xb.dtsi>
+#include <st/g4/stm32g431c(6-8-b)ux-pinctrl.dtsi>
+#include <zephyr/dt-bindings/usb-c/pd.h>
+#include <zephyr/dt-bindings/input/input-event-codes.h>
+
+#include <zephyr/dt-bindings/display/panel.h>
+#include <zephyr/dt-bindings/sensor/lis2dw12.h>
+#include <zephyr/dt-bindings/pwm/pwm.h>
+
+
+
+#include <zephyr/dt-bindings/mipi_dbi/mipi_dbi.h>
+
+
+/ {
+	model = "C210 SOLDORING IRON STM32G431";
+	compatible = "mao,c210_g431";
+
+	chosen {
+		zephyr,sram = &sram0;
+		zephyr,flash = &flash0;
+		zephyr,display = &lcd_gc9d01;
+
+	};
+
+	aliases {
+		btn0 = &button_0;
+		btn1 = &button_1;
+		lcd-blk = &lcd_blk_0;
+		ina226 = &ina226;
+		usbc-port0 = &usbc1;
+		watchdog0 = &iwdg;
+	};
+
+	leds: leds {
+		compatible = "gpio-leds";
+        lcd_blk_0: lcd_blk0 {
+			gpios = <&gpiob 1 GPIO_ACTIVE_HIGH>;
+		};
+	};
+
+    zephyr,user {
+        io-channels = <&adc2 17>;
+    };
+
+
+
+	buttons: buttons {
+		compatible = "gpio-keys";
+		polling-mode;
+		debounce-interval-ms = <30>;
+		button_0: button0 {
+			label = "UP";
+			gpios = <&gpiob 9 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
+			zephyr,code = <INPUT_KEY_0>;
+		};
+		button_1: button1 {
+			label = "DOWN";
+			gpios = <&gpiob 8  (GPIO_PULL_DOWN | GPIO_ACTIVE_HIGH)>;
+			zephyr,code = <INPUT_KEY_1>;
+		};
+	};
+
+	longpress {
+          input = <&buttons>;
+          compatible = "zephyr,input-longpress";
+          input-codes = <INPUT_KEY_0>,<INPUT_KEY_1>;
+          short-codes = <INPUT_KEY_A>,<INPUT_KEY_B>;
+          long-codes = <INPUT_KEY_X>,<INPUT_KEY_Y>;
+          long-delay-ms = <1000>;
+    };
+
+	vbus1: vbus {
+		compatible = "zephyr,usb-c-vbus-adc";
+		status = "okay";
+		io-channels = <&adc1 11>;
+		output-ohms = <3600>;
+		full-ohms = <(35000+3600)>;
+	};
+
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		usbc1: usbc-port@1 {
+			compatible = "usb-c-connector";
+			status = "okay";
+			reg = <1>;
+			tcpc = <&ucpd1>;
+			vbus = <&vbus1>;
+			data-role = "device";
+			power-role = "sink";
+			sink-pdos = <
+				PDO_FIXED(5000, 100, PDO_FIXED_USB_COMM)
+				PDO_FIXED(9000, 1000, 0)
+			>;
+		};
+		
+    };
+    pwmleds: pwmleds {
+        compatible = "pwm-leds";
+        status = "okay";
+        solder_heater: solder_heater {
+            pwms = <&heater_pwm 2 PWM_MSEC(1) PWM_POLARITY_NORMAL>; /* TIM2_CH2，1 kHz  */
+            label = "SOLDER_HEATER";
+        }; 
+    };
+
+	mipi_dbi_gc9d01: mipi_dbi_gc9d01 {
+		compatible = "zephyr,mipi-dbi-spi";
+		spi-dev = <&spi1>;
+		dc-gpios = <&gpioa 0 GPIO_ACTIVE_HIGH>;
+		reset-gpios = <&gpioa 2 GPIO_ACTIVE_LOW>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		 lcd_gc9d01: gc9d01@0 {
+            compatible = "galaxycore,gc9d01";
+            reg = <0>;
+            mipi-max-frequency = <10000000>; 
+            mipi-mode= "MIPI_DBI_MODE_SPI_4WIRE";
+            width = <40>;
+            height = <160>;
+            pixel-format = <PANEL_PIXEL_FORMAT_RGB_565>;
+            orientation = "90";
+            //display-inversion; /* 可选，启用颜色反转 */
+            pwrctrl2= [2c];
+            pwrctrl3= [1a];
+            pwrctrl4= [28];
+            gamma1= [13 15 04 05 01 38];
+            gamma2= [4B B8 7B 34 35 EF];
+            gamma3= [13 15 04 05 01 34];
+            gamma4= [47 B4 72 34 35 DA];
+         };
+    };
+
+};
+
+
+/* 启用 timers2 和 PWM 子节点 */
+&timers2 {
+    status = "okay";
+
+    heater_pwm: heater_pwm {
+        compatible = "st,stm32-pwm";
+        #pwm-cells = <3>;
+        pinctrl-0 = <&tim2_ch2_pa1>;
+        pinctrl-names = "default";
+        status = "okay";
+    };
+};
+
+&timers3 {
+    status = "okay";
+    st,prescaler = <143>;
+
+
+    //用counter对烙铁头热电偶定时采样
+    tip_adc_counter: tip_adc_counter {
+				compatible = "st,stm32-counter";
+				status = "okay";
+				label = "COUNTER_2";
+	};
+};
+
+
+
+
+
+&clk_lsi {
+	status = "okay";
+};
+
+&clk_lse {
+	status = "disabled";
+};
+
+&clk_hsi {
+	status = "disabled";
+};
+
+&clk_hse {
+	status = "okay";
+	clock-frequency = <DT_FREQ_M(8)>;
+};
+
+&rcc {
+	clocks = <&pll>;
+	clock-frequency = <DT_FREQ_M(144)>;
+	ahb-prescaler = <1>;
+	apb1-prescaler = <1>;
+	apb2-prescaler = <1>;
+};
+
+&pll {
+	status = "okay";
+	div-m = <1>;
+	mul-n = <36>;
+	div-p = <2>;
+	div-q = <6>;
+	div-r = <2>;
+	clocks = <&clk_hse>;
+};
+
+&rtc {
+	status = "okay";
+	clocks = <&rcc STM32_CLOCK_BUS_APB1 0x00000400>,
+		 <&rcc STM32_SRC_LSI RTC_SEL(2)>;
+};
+
+stm32_lp_tick_source: &lptim1 {
+    status = "okay";
+    clocks = <&rcc STM32_CLOCK_BUS_APB1 0x80000000>, /* APB1 时钟 */
+             <&rcc STM32_SRC_LSI LPTIM1_SEL(1)>; /* 使用 LSI 作为 LPTIM1 时钟源 */
+};
+
+&flash0 {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		/* 4KiB of storage at the end of the 128KiB FLASH */
+		storage_partition: partition@1f000 {
+			label = "storage";
+			reg = <0x0001f000 DT_SIZE_K(4)>;
+		};
+	};
+};
+
+&iwdg {
+	status = "okay";
+};
+
+//&usart2 {
+//	status = "disabled";
+//	pinctrl-0 = <&usart2_tx_pa2 &usart2_rx_pa3>;
+//	pinctrl-names = "default";
+//	current-speed = <115200>;
+//};
+
+
+&i2c2 {
+	status = "okay";
+	pinctrl-0 = <&i2c2_scl_pc4 &i2c2_sda_pa8>;
+	pinctrl-names = "default";
+	clock-frequency = <I2C_BITRATE_FAST>;
+
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	ina226: ina226@40 {
+		compatible = "ti,ina226";
+		status = "okay";
+		reg = <0x40>;
+		avg-count = <4>;
+		vbus-conversion-time-us = <1100>;
+		vshunt-conversion-time-us = <1100>;
+		operating-mode = "Shunt and Bus, Continuous";
+		current-lsb-microamps = <250>;
+		rshunt-micro-ohms = <5000>; //5mR
+	};
+
+
+    lis2dw: lis2dw@18{
+        compatible = "st,lis2dw12";
+        status = "okay";
+        reg = <0x18>;
+        //wakeup-duration = <LIS2DW12_DT_WAKEUP_4_ODR>;
+        //ff-threshold = <LIS2DW12_DT_FF_THRESHOLD_500_mg>;
+        //tap-mode = <LIS2DW12_DT_SINGLE_DOUBLE_TAP>;
+        power-mode = <LIS2DW12_DT_HP_MODE>;
+        bw-filt = <LIS2DW12_DT_FILTER_BW_ODR_DIV_2>;
+        odr = <100>;
+        range = <2>;
+        //irq-gpios = <&gpioc 6 GPIO_ACTIVE_HIGH>; // 可选：中断引脚
+
+    };
+   
+};
+
+&spi1 {
+	status = "okay";
+	pinctrl-0 = <
+		         &spi1_sck_pa5
+	             &spi1_miso_pa6
+                 &spi1_mosi_pa7
+	>;
+	pinctrl-names = "default";
+    cs-gpios = <&gpiob 10 GPIO_ACTIVE_LOW>;
+    
+};
+
+&adc1 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	pinctrl-0 = <&adc1_in11_pb12	    /* VBUS */
+		    >;
+	pinctrl-names = "default";
+	st,adc-clock-source = "SYNC";
+	st,adc-prescaler = <4>;
+	status = "okay";
+
+	channel@b {
+		reg = <0xb>;
+		zephyr,gain = "ADC_GAIN_1";
+		zephyr,reference = "ADC_REF_INTERNAL";
+		zephyr,vref-mv = <3300>;
+		zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+		zephyr,resolution = <12>;
+	};
+};
+
+
+&adc2 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	pinctrl-0 = <&adc2_in17_pa4	    /* temp */
+		    >;
+	pinctrl-names = "default";
+	st,adc-clock-source = "SYNC";
+	st,adc-prescaler = <4>;
+	status = "okay";
+
+	channel@11 {
+		reg = <0x11>;
+		zephyr,gain = "ADC_GAIN_1";
+		zephyr,reference = "ADC_REF_INTERNAL";
+		zephyr,vref-mv = <3300>;
+		zephyr,acquisition-time = <ADC_ACQ_TIME(ADC_ACQ_TIME_TICKS, 6)>;
+		zephyr,resolution = <12>;
+        zephyr,oversampling = <4>;
+	};
+};
+
+//&dma1{
+//	status = "okay";
+//};
+
+&ucpd1 {
+	psc-ucpdclk = <1>;
+	hbitclkdiv = <27>;
+	pinctrl-0 = <&ucpd1_cc1_pb6 &ucpd1_cc2_pb4>;
+	pinctrl-names = "default";
+	status = "okay";
+	dead-battery;
+};
+//stm32温度
+&die_temp {
+    status = "okay";
+};
+

@@ -1,0 +1,10 @@
+sample:
+  name: Soldering iron tip
+tests:
+  sample.mypd:
+    tags:
+      - gpio
+    filter: dt_enabled_alias_with_parent_compat("gpio-leds")
+    depends_on: gpio
+    integration_platforms:
+      - stm32

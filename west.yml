@@ -1,0 +1,22 @@
+manifest:
+  remotes:
+    - name: maoabc
+      url-base: https://github.com/maoabc
+    - name: zephyrproject-rtos
+      url-base: https://github.com/zephyrproject-rtos
+
+  projects:
+    - name: zephyr
+      remote: zephyrproject-rtos
+      revision: main  
+      import: true    # 必须！没有这个无法编译，报 boards.cmake 错误
+      path: zephyr-master
+
+    - name: gc9d01_zephyr
+      remote: maoabc
+      revision: main
+      path: deps/gc9d01
+
+  self:
+    path: .
+

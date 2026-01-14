@@ -1,0 +1,7 @@
+
+board:
+  name: t12_g431
+  full_name: "T12 G431 Custom Board"
+  vendor: mao
+  socs:
+    - name: stm32g431xx
