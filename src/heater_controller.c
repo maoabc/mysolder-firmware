@@ -37,9 +37,6 @@ int soldering_tip_pwm_set_duty_cycle(uint8_t percent)
 	if (percent > CONFIG_MAX_DUTY_CYCLE) {
 		percent = CONFIG_MAX_DUTY_CYCLE;
 	}
-	if (percent < 0) {
-		percent = 0;
-	}
 
 	/* 将百分比转换为纳秒 */
 	uint32_t pulse_ns = (percent * PWM_PERIOD_NS) / 100;
@@ -48,12 +45,12 @@ int soldering_tip_pwm_set_duty_cycle(uint8_t percent)
 	return pwm_set_dt(&pwm_dev, PWM_PERIOD_NS, pulse_ns);
 }
 
-static void heater_update()
+static void heater_update(const struct controller *tip_ctrl)
 {
 	// 测试
 	uint8_t duty;
-	if (tip_ctrl.heater_on) {
-		float pid_out = pid_get_output(&tip_ctrl.pid);
+	if (tip_ctrl->heater_on) {
+		float pid_out = pid_get_output(&tip_ctrl->pid);
 		duty = (uint8_t)(((pid_out / PID_MAX_OUTPUT)) * CONFIG_MAX_DUTY_CYCLE);
 	} else {
 		duty = 0;
@@ -94,7 +91,7 @@ static void adc_work_handler(struct k_work *work)
 			    tip_ctrl.is_sleeping ? tip_ctrl.sleep_setpoint : tip_ctrl.setpoint);
 	}
 
-	heater_update();
+	heater_update(&tip_ctrl);
 }
 
 K_WORK_DEFINE(adc_work, adc_work_handler);
@@ -137,6 +134,7 @@ int init_tip_controller(struct app *app)
 			   K_THREAD_STACK_SIZEOF(adc_workq_stack), // 栈大小
 			   K_PRIO_PREEMPT(3),                      // 优先级
 			   NULL);
+
 	if (!device_is_ready(tip_adc_counter_dev)) {
 		LOG_ERR("Thermocouple adc counter device not ready");
 		return -ENODEV;

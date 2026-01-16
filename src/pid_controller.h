@@ -27,11 +27,11 @@ void pid_set_output_limits(pid_controller *pid, float min, float max);
 void pid_set_sample_time(pid_controller *pid, uint32_t new_sample_time);
 void pid_set_tunings(pid_controller *pid, float kp, float ki, float kd);
 void pid_set_controller_direction(pid_controller *pid, uint8_t direction);
-float pid_get_kp(pid_controller *pid);
-float pid_get_ki(pid_controller *pid);
-float pid_get_kd(pid_controller *pid);
-uint8_t pid_get_direction(pid_controller *pid);
+float pid_get_kp(const pid_controller *pid);
+float pid_get_ki(const pid_controller *pid);
+float pid_get_kd(const pid_controller *pid);
+uint8_t pid_get_direction(const pid_controller *pid);
 
-float pid_get_output(pid_controller *pid);
+float pid_get_output(const pid_controller *pid);
 
 #endif //__PID_CONTROLLER_H

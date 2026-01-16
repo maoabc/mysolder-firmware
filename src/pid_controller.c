@@ -128,23 +128,23 @@ void pid_set_controller_direction(pid_controller *pid, uint8_t direction)
 }
 
 // 获取参数
-float pid_get_kp(pid_controller *pid)
+float pid_get_kp(const pid_controller *pid)
 {
 	return pid->disp_kp;
 }
-float pid_get_ki(pid_controller *pid)
+float pid_get_ki(const pid_controller *pid)
 {
 	return pid->disp_ki;
 }
-float pid_get_kd(pid_controller *pid)
+float pid_get_kd(const pid_controller *pid)
 {
 	return pid->disp_kd;
 }
-uint8_t pid_get_direction(pid_controller *pid)
+uint8_t pid_get_direction(const pid_controller *pid)
 {
 	return pid->controller_direction;
 }
-float pid_get_output(pid_controller *pid)
+float pid_get_output(const pid_controller *pid)
 {
 	return pid->output;
 }
