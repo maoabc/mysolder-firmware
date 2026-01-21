@@ -32,14 +32,13 @@ static void ui_set_state(struct app *app, const enum ui_state state);
 
 static const struct device *ina226_dev = DEVICE_DT_GET(DT_ALIAS(ina226));
 
-static const struct device *display_dev;
+static const struct device *display_dev = DEVICE_DT_GET(DT_CHOSEN(zephyr_display));
 
 // 屏幕背光控制
 static const struct gpio_dt_spec lcd_blk = GPIO_DT_SPEC_GET(DT_ALIAS(lcd_blk), gpios);
 
 static void display_init(void)
 {
-	display_dev = DEVICE_DT_GET(DT_CHOSEN(zephyr_display));
 	if (!device_is_ready(display_dev)) {
 		LOG_ERR("DISPLAY device not ready");
 		return;
@@ -306,8 +305,9 @@ void app_event_handler(struct app *app, enum event evt)
 	}
 	enum ui_state state = ui_get_current_state(app);
 	app->req.val = NORMAL;
-	if (state == UI_PREVIEW) {
-		evt = preview_event(app);
+	// 防止preview界面被反复进入
+	if (state == UI_PREVIEW && evt != EVT_ENTER_PREVIEW) {
+		evt = preview_event(app); // 任意按键，检测pd电压是否达到要求
 	}
 	switch (evt) {
 	case EVT_NEXT: {
@@ -347,8 +347,10 @@ void app_event_handler(struct app *app, enum event evt)
 		break;
 	}
 	case EVT_ENTER_PREVIEW: {
-		ui_set_state(app, UI_PREVIEW);
-		app->req.val = FULL_SCREEN;
+		if (state != UI_PREVIEW) {
+			ui_set_state(app, UI_PREVIEW);
+			app->req.val = FULL_SCREEN;
+		}
 		break;
 	}
 	case EVT_EMPTY:

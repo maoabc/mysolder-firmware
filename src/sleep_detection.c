@@ -12,12 +12,10 @@
 LOG_MODULE_REGISTER(sleep_detection, LOG_LEVEL_INF);
 
 // 定义常量
-#define AY_MIN            3.0f      // 工作姿态Y轴最小加速度（m/s²）
-#define SLEEP_TIMEOUT     2000      // 休眠超时（ms）
-#define STOP_TIMEOUT      1000 * 15 // 暂停超时（ms）
-#define SAMPLE_INTERVAL   100       // 采样间隔（ms）
-#define THREAD_STACK_SIZE 512
-#define THREAD_PRIORITY   5
+#define AY_MIN          3.0f           // 工作姿态Y轴最小加速度（m/s²）
+#define SLEEP_TIMEOUT   2000           // 休眠超时（ms）
+#define STOP_TIMEOUT    1000 * 10 * 60 // 暂停超时（ms）,这里十分钟无操作就进入stop模式
+#define SAMPLE_INTERVAL 400            // 采样间隔（ms）
 
 static const struct device *lis2dw_dev = DEVICE_DT_GET(DT_NODELABEL(lis2dw));
 
@@ -67,10 +65,13 @@ static void posture_detection_thread(void *arg1, void *arg2, void *arg3)
 
 			// 检查休眠超时
 			uint32_t time_diff = k_uptime_get_32() - sleep_timer_start;
-			if (sleep_timer_start > 0 && time_diff >= SLEEP_TIMEOUT) {
+
+			// 先判断更长时间的停止状态，然后判断休眠
+			if (sleep_timer_start > 0 && time_diff >= STOP_TIMEOUT) {
 				app->tip_ctrl->is_sleeping = true;
-			} else if (sleep_timer_start > 0 && time_diff >= STOP_TIMEOUT) {
 				app_event_handler(app, EVT_ENTER_PREVIEW); // 进入预览界面会关闭加热
+			} else if (sleep_timer_start > 0 && time_diff >= SLEEP_TIMEOUT) {
+				app->tip_ctrl->is_sleeping = true;
 			}
 		} else {
 			sleep_timer_start = 0;
@@ -84,7 +85,7 @@ static void posture_detection_thread(void *arg1, void *arg2, void *arg3)
 }
 
 // 线程栈和ID
-K_THREAD_STACK_DEFINE(posture_thread_stack, THREAD_STACK_SIZE);
+K_THREAD_STACK_DEFINE(posture_thread_stack, 512);
 static struct k_thread posture_thread_data;
 
 // 初始化并启动休眠检测
@@ -97,7 +98,7 @@ int sleep_detection_init(struct app *app)
 	// 启动线程
 	k_thread_create(&posture_thread_data, posture_thread_stack,
 			K_THREAD_STACK_SIZEOF(posture_thread_stack), posture_detection_thread,
-			(void *)app, NULL, NULL, THREAD_PRIORITY, 0, K_NO_WAIT);
+			(void *)app, NULL, NULL, 100, 0, K_NO_WAIT);
 
 	k_thread_name_set(&posture_thread_data, "sleep_detection");
 
