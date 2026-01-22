@@ -14,8 +14,8 @@ LOG_MODULE_REGISTER(sleep_detection, LOG_LEVEL_INF);
 // 定义常量
 #define AY_MIN          3.0f           // 工作姿态Y轴最小加速度（m/s²）
 #define SLEEP_TIMEOUT   2000           // 休眠超时（ms）
-#define STOP_TIMEOUT    1000 * 10 * 60 // 暂停超时（ms）,这里十分钟无操作就进入stop模式
-#define SAMPLE_INTERVAL 400            // 采样间隔（ms）
+#define STOP_TIMEOUT    1000 * 10 * 60 // 暂停超时（ms）,这里10分钟一直sleep模式就进入stop模式
+#define SAMPLE_INTERVAL 200            // 采样间隔（ms）
 
 static const struct device *lis2dw_dev = DEVICE_DT_GET(DT_NODELABEL(lis2dw));
 
