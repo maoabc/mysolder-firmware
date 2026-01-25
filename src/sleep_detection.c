@@ -36,14 +36,12 @@ static void posture_detection_thread(void *arg1, void *arg2, void *arg3)
 		// 读取加速度
 		if (sensor_sample_fetch_chan(lis2dw_dev, SENSOR_CHAN_ACCEL_XYZ) < 0) {
 			LOG_ERR("Failed to fetch sensor data");
-			k_msleep(SAMPLE_INTERVAL);
-			continue;
+            goto failed;
 		}
 
 		if (sensor_channel_get(lis2dw_dev, SENSOR_CHAN_ACCEL_XYZ, accel) < 0) {
 			LOG_ERR("Failed to get acceleration data");
-			k_msleep(SAMPLE_INTERVAL);
-			continue;
+            goto failed;
 		}
 
 		float ax = sensor_value_to_float(&accel[0]);
@@ -79,7 +77,7 @@ static void posture_detection_thread(void *arg1, void *arg2, void *arg3)
 				app->tip_ctrl->is_sleeping = false;
 			}
 		}
-
+failed:
 		k_msleep(SAMPLE_INTERVAL);
 	}
 }
