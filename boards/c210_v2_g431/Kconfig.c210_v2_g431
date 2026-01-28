@@ -7,7 +7,7 @@ config BOARD_C210_V2_G431
 
 config MAX_DUTY_CYCLE
     int "Maximum PWM duty cycle (%)"
-    default 45
+    default 50
     range 10 90
     help
       Power limit to protect hardware and prevent overheating.

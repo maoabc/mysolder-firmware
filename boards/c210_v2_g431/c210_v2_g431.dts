@@ -101,7 +101,7 @@
         compatible = "pwm-leds";
         status = "okay";
         solder_heater: solder_heater {
-            pwms = <&heater_pwm 2 PWM_USEC(200) PWM_POLARITY_NORMAL>; /* TIM2_CH2 */
+            pwms = <&heater_pwm 2 PWM_USEC(50) PWM_POLARITY_NORMAL>; /* TIM2_CH2 */
             label = "SOLDER_HEATER";
         }; 
     };
