@@ -39,10 +39,10 @@ int soldering_tip_pwm_set_duty_cycle(uint8_t percent)
 	}
 
 	/* 将百分比转换为纳秒 */
-	uint32_t pulse_ns = (percent * PWM_PERIOD_NS) / 100;
-    if(pulse_ns < 1000){//脉冲时间太小容易震荡
-        pulse_ns = 0;
-    }
+	uint32_t pulse_ns = percent * (PWM_PERIOD_NS / 100);
+	if (pulse_ns < 1000) { // 脉冲时间太小容易震荡
+		pulse_ns = 0;
+	}
 
 	/* 设置 PWM 周期和脉宽 */
 	return pwm_set_dt(&pwm_dev, PWM_PERIOD_NS, pulse_ns);
