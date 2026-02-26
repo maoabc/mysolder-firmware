@@ -1,0 +1,69 @@
+
+config BOARD_C245_G431
+    bool "C245 Soldering Iron STM32G431 board"
+    select SOC_STM32G431XX
+    default y
+
+
+config MAX_DUTY_CYCLE
+    int "Maximum PWM duty cycle (%)"
+    default 50
+    range 10 90
+    help
+      Power limit to protect hardware and prevent overheating.
+
+config TIP_SAMPLING_PERIOD_MS
+    int "Thermocouple sampling period (ms)"
+    default 25
+    range 10 200
+    help
+      Time between temperature samples. 25 ms ≈ 40 Hz (C210), 50 ms ≈ 20 Hz (T12).
+
+config MOSFET_OFF_DELAY_US
+    int "MOSFET off delay after PWM=0 (μs)"
+    default 600
+    range 100 5000
+    help
+      Ensures MOSFET is fully off before next sample or operation.
+
+config PID_COMPUTE_INTERVAL_MS
+    int "PID computation interval (ms)"
+    default 25
+    range 10 100
+    help
+      How often the PID controller updates the output.
+
+config PID_KP_1000X
+    int "PID proportional gain Kp (×1000)"
+    default 5000
+    range 1000 20000
+    help
+      Kp scaled by 1000. Example: 5000 means actual Kp = 5.000
+
+config PID_KI_1000X
+    int "PID integral gain Ki (×1000)"
+    default 5
+    range 0 5000
+    help
+      Ki scaled by 1000. Example: 5 means actual Ki = 0.005
+
+config PID_KD_1000X
+    int "PID derivative gain Kd (×1000)"
+    default 10 
+    range 0 5000
+    help
+      Kd scaled by 1000. Example: 10 means actual Kd = 0.010
+
+config RUNNING_SETPOINT_C
+    int "Running/working setpoint (°C)"
+    default 250
+    range 150 450
+    help
+      Target temperature when actively soldering.
+
+config SLEEPING_SETPOINT_C
+    int "Sleep/standby setpoint (°C)"
+    default 130
+    range 50 200
+    help
+      Lower temperature when iron is idle to save power and reduce wear.
