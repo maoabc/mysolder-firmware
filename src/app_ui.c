@@ -83,8 +83,10 @@ static enum smf_state_result main_draw(void *obj)
 
 	sample_fetch(app);
 
-	snprintf(buf, sizeof(buf), "%3d", (int32_t)app->tip_ctrl->cur_temp);
-	draw_text(display_dev, buf, 10, 7, Font_16x26, COLOR_YELLOW, COLOR_BLACK);
+	snprintf(buf, sizeof(buf), "%3d\xb0" "C", (int32_t)app->tip_ctrl->cur_temp);
+	draw_text(display_dev, buf, 10, 7, Font_16x26,
+            app->tip_ctrl->is_sleeping ? COLOR_GREEN : COLOR_YELLOW,
+            COLOR_BLACK);
 
 	int8_t x_off = 100;
 
@@ -102,8 +104,8 @@ static enum smf_state_result main_draw(void *obj)
 	snprintf(buf, sizeof(buf), "P:%2d.%1dW", val.val1, (val.val2 / 100000) % 10);
 	draw_text(display_dev, buf, x_off, y_off, Font_7x10, COLOR_RED, COLOR_BLACK);
 
-	snprintf(buf, sizeof(buf), "%-5s", app->tip_ctrl->is_sleeping ? "sleep" : "run");
-	draw_text(display_dev, buf, x_off - 40, y_off, Font_7x10, COLOR_GREEN, COLOR_BLACK);
+	//snprintf(buf, sizeof(buf), "%-5s", app->tip_ctrl->is_sleeping ? "sleep" : "run");
+	//draw_text(display_dev, buf, x_off - 40, y_off, Font_7x10, COLOR_GREEN, COLOR_BLACK);
 	return SMF_EVENT_HANDLED;
 }
 

@@ -25,7 +25,7 @@ static const struct adc_dt_spec adc_chan0 = ADC_DT_SPEC_GET_BY_IDX(DT_PATH(zephy
 
 
 static const struct device *die_sensor = DEVICE_DT_GET(DT_NODELABEL(die_temp));
-static float cool_temp;
+static double cool_temp;
 
 // 初始化 ADC
 int temp_adc_init()
@@ -114,7 +114,7 @@ int temp_read_adc_raw(uint32_t *raw)
 	return 0;
 }
 
-#ifdef CONFIG_BOARD_T12_G431
+#if defined(CONFIG_BOARD_T12_G431)
 
 // From https://github.com/Ralim/IronOS/blob/dev/source/Core/BSP/Miniware/ThermoModel.cpp
 
@@ -202,13 +202,26 @@ float temp_raw_to_temperature(uint32_t raw)
 	uV = uV * (1000 / GAIN);
 	return InterpolateLookupTable(uVtoDegC, ITEM_COUNT, uV) + cool_temp;
 }
+#elif  defined(CONFIG_BOARD_C245_G431)
+
+// From https://github.com/AxxAxx/AxxSolder
+//
+
+#define TC_COMPENSATION_X2_T245 (-6.818562488097707e-07)
+#define TC_COMPENSATION_X1_T245 0.1432374243560926
+#define TC_COMPENSATION_X0_T245 23.777399955382318
+
+float temp_raw_to_temperature(uint32_t raw)
+{
+	return raw * raw * TC_COMPENSATION_X2_T245 + raw * TC_COMPENSATION_X1_T245 + cool_temp;
+}
 #else
 
 // From https://github.com/AxxAxx/AxxSolder
 //
-#define TC_COMPENSATION_X2_T210 (6.082461666584128e-06f)
-#define TC_COMPENSATION_X1_T210 0.3823655573322506f
-// #define TC_COMPENSATION_X0_T210 20.968033870812942f
+#define TC_COMPENSATION_X2_T210 (6.082461666584128e-06)
+#define TC_COMPENSATION_X1_T210 0.3823655573322506
+// #define TC_COMPENSATION_X0_T210 20.968033870812942
 
 float temp_raw_to_temperature(uint32_t raw)
 {

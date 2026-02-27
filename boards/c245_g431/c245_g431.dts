@@ -16,7 +16,7 @@
 
 / {
 	model = "C245 SOLDORING IRON STM32G431";
-	compatible = "mao,c2245_g431";
+	compatible = "mao,c245_g431";
 
 	chosen {
 		zephyr,sram = &sram0;
