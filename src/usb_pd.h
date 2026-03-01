@@ -37,19 +37,6 @@ struct port0_data_t {
 
 
 
-#ifdef CONFIG_IS_T12
-#define MAX_REQUEST_VOLTAGE 20000
-
-// 用于限制固定档位PDO索引，防止pdo索引读取错误导致请求电压过大
-// ucpd的bug,有时pdo读取不全，可能导致请求电压档位过高
-#define MAX_FIXED_PDO_IDX   4
-#else
-#define MAX_REQUEST_VOLTAGE 15000
-#define MAX_FIXED_PDO_IDX   3
-#endif
-
-
-
 struct app;
 
 void pd_start(struct app *app);

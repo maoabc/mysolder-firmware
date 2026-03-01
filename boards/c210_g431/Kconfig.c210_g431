@@ -7,6 +7,17 @@ config BOARD_C210_G431
     default y
 
 
+
+config PD_MAX_REQUESTED_VOLTAGE
+    int "Maximum PD requested voltage (mV)"
+    default 15000
+    range 5000 20000
+    help
+      Maximum voltage this board will request from USB PD power supply.
+      Typical values: 5V, 9V, 12V, 15V, 20V.
+
+
+
 config MAX_DUTY_CYCLE
     int "Maximum PWM duty cycle (%)"
     default 45

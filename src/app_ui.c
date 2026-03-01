@@ -222,7 +222,7 @@ static enum event preview_event(struct app *app)
 		sample_fetch(app);
 		struct sensor_value val;
 		sensor_channel_get(ina226_dev, SENSOR_CHAN_VOLTAGE, &val);
-		if (abs(MAX_REQUEST_VOLTAGE - (int)(sensor_value_to_double(&val) * 1000)) <
+		if (abs(CONFIG_PD_MAX_REQUESTED_VOLTAGE - (int)(sensor_value_to_double(&val) * 1000)) <
 		    2000) { // 检测实际电压跟请求电压差不超过2V
 			evt = EVT_HOME;
 		} else {

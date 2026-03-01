@@ -89,6 +89,7 @@ static void port0_policy_cb_set_src_cap(const struct device *dev, const uint32_t
 	int num;
 
 	dpm_data = usbc_get_dpm_data(dev);
+	dpm_data->req_idx = 0;
 
 	num = num_pdos;
 	if (num > PDO_MAX_DATA_OBJECTS) {
@@ -101,8 +102,8 @@ static void port0_policy_cb_set_src_cap(const struct device *dev, const uint32_t
 		src_pdo.raw_value = dpm_data->src_caps[i];
 
 		uint16_t vol = PD_CONVERT_FIXED_PDO_VOLTAGE_TO_MV(src_pdo.voltage);
-		if (src_pdo.type == PDO_FIXED && (vol > 0 && vol <= MAX_REQUEST_VOLTAGE) &&
-		    i <= MAX_FIXED_PDO_IDX) { // 从低到高尽可能匹配目标电压
+		if (src_pdo.type == PDO_FIXED && (vol > 0 && vol <= CONFIG_PD_MAX_REQUESTED_VOLTAGE)
+                ) { // 从低到高尽可能匹配目标电压
 			dpm_data->req_idx = i;
 		}
 	}
