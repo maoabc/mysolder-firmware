@@ -4,6 +4,8 @@ config BOARD_C245_G431
     select SOC_STM32G431XX
     default y
 
+if BOARD_C245_G431
+
 config PD_MAX_REQUESTED_VOLTAGE
     int "Maximum PD requested voltage (mV)"
     default 20000
@@ -75,3 +77,6 @@ config SLEEPING_SETPOINT_C
     range 50 200
     help
       Lower temperature when iron is idle to save power and reduce wear.
+
+endif
+
