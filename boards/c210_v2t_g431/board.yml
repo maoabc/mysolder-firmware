@@ -1,0 +1,6 @@
+board:
+  name: c210_v2t_g431
+  full_name: "C210 V2T G431 developer version"
+  vendor: mao
+  socs:
+    - name: stm32g431xx

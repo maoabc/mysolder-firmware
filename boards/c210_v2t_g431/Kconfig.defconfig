@@ -1,0 +1,40 @@
+
+if BOARD_C210_V2T_G431
+
+config ARM_MPU
+    default y
+
+config HW_STACK_PROTECTION
+    default y
+
+config FPU
+    default y
+
+config CLOCK_CONTROL
+    default y
+
+config GPIO
+    default y
+
+config SPI
+    default y
+
+config I2C
+    default y
+
+config SENSOR
+    default y
+
+config LIS2DW12
+    default y
+
+config ADC
+    default y
+
+config PWM
+    default y
+
+config COUNTER
+    default y
+
+endif # BOARD_C210_V2_G431
