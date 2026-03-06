@@ -73,7 +73,7 @@ config RUNNING_SETPOINT_C
 
 config SLEEPING_SETPOINT_C
     int "Sleep/standby setpoint (°C)"
-    default 130
+    default 160
     range 50 200
     help
       Lower temperature when iron is idle to save power and reduce wear.

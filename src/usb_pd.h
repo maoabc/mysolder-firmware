@@ -41,7 +41,9 @@ struct app;
 
 void pd_start(struct app *app);
 
-bool check_pd_ready(struct port0_data_t *data);
+bool check_pd_ready(const struct port0_data_t *data);
+
+uint16_t pd_get_requested_voltage(const struct port0_data_t *data);
 
 void pd_send_hard_reset();
 

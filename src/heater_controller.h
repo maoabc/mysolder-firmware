@@ -12,7 +12,7 @@
 
 struct tip_adc_counter_config {
   // 烙铁头每隔一段时间触发adc
-  struct counter_alarm_cfg tip_cfg;
+  struct counter_alarm_cfg sampling_cfg;
   // adc计数触发后，延迟一些时间等待mosfet关断,执行adc
   struct counter_alarm_cfg delay_cfg;
 };

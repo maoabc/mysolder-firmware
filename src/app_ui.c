@@ -83,10 +83,12 @@ static enum smf_state_result main_draw(void *obj)
 
 	sample_fetch(app);
 
-	snprintf(buf, sizeof(buf), "%3d\xb0" "C", (int32_t)app->tip_ctrl->cur_temp);
+	snprintf(buf, sizeof(buf),
+		 "%3d\xb0"
+		 "C",
+		 (int32_t)app->tip_ctrl->cur_temp);
 	draw_text(display_dev, buf, 10, 7, Font_16x26,
-            app->tip_ctrl->is_sleeping ? COLOR_GREEN : COLOR_YELLOW,
-            COLOR_BLACK);
+		  app->tip_ctrl->is_sleeping ? COLOR_GREEN : COLOR_YELLOW, COLOR_BLACK);
 
 	int8_t x_off = 100;
 
@@ -104,8 +106,8 @@ static enum smf_state_result main_draw(void *obj)
 	snprintf(buf, sizeof(buf), "P:%2d.%1dW", val.val1, (val.val2 / 100000) % 10);
 	draw_text(display_dev, buf, x_off, y_off, Font_7x10, COLOR_RED, COLOR_BLACK);
 
-	//snprintf(buf, sizeof(buf), "%-5s", app->tip_ctrl->is_sleeping ? "sleep" : "run");
-	//draw_text(display_dev, buf, x_off - 40, y_off, Font_7x10, COLOR_GREEN, COLOR_BLACK);
+	// snprintf(buf, sizeof(buf), "%-5s", app->tip_ctrl->is_sleeping ? "sleep" : "run");
+	// draw_text(display_dev, buf, x_off - 40, y_off, Font_7x10, COLOR_GREEN, COLOR_BLACK);
 	return SMF_EVENT_HANDLED;
 }
 
@@ -222,8 +224,13 @@ static enum event preview_event(struct app *app)
 		sample_fetch(app);
 		struct sensor_value val;
 		sensor_channel_get(ina226_dev, SENSOR_CHAN_VOLTAGE, &val);
-		if (abs(CONFIG_PD_MAX_REQUESTED_VOLTAGE - (int)(sensor_value_to_double(&val) * 1000)) <
-		    2000) { // 检测实际电压跟请求电压差不超过2V
+
+		// 检测实际电压跟请求电压差不超过2V
+		if (abs(pd_get_requested_voltage(app->pd_data) -
+			(int)(sensor_value_to_double(&val) * 1000)) < 2000 &&
+		    (int)(sensor_value_to_double(&val) * 1000) >
+			    7000 // 这里随便加了7V保证请求的是9V以上档位
+		) {
 			evt = EVT_HOME;
 		} else {
 			// 尝试重新请求pd

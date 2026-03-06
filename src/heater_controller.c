@@ -114,7 +114,7 @@ static void tip_adc_counter_callback(const struct device *dev, uint8_t chan_id, 
 
 	// 触发下一次计数
 	// 因为执行adc时间远小于两次adc间隔,所以直接这里触发
-	counter_set_channel_alarm(dev, TIP_ADC_COUNTER_CHAN, &tip_adc_cfg->tip_cfg);
+	counter_set_channel_alarm(dev, TIP_ADC_COUNTER_CHAN, &tip_adc_cfg->sampling_cfg);
 }
 
 static void tip_adc_delay_callback(const struct device *dev, uint8_t chan_id, uint32_t ticks,
@@ -159,11 +159,11 @@ int init_tip_controller(struct app *app)
 	counter_start(tip_adc_counter_dev);
 
 	// 对热电偶进行采样
-	tip_ctrl.adc_cfg.tip_cfg.flags = 0;
-	tip_ctrl.adc_cfg.tip_cfg.ticks =
+	tip_ctrl.adc_cfg.sampling_cfg.flags = 0;
+	tip_ctrl.adc_cfg.sampling_cfg.ticks =
 		counter_us_to_ticks(tip_adc_counter_dev, CONFIG_TIP_SAMPLING_PERIOD_MS * 1000);
-	tip_ctrl.adc_cfg.tip_cfg.callback = tip_adc_counter_callback;
-	tip_ctrl.adc_cfg.tip_cfg.user_data = &tip_ctrl.adc_cfg;
+	tip_ctrl.adc_cfg.sampling_cfg.callback = tip_adc_counter_callback;
+	tip_ctrl.adc_cfg.sampling_cfg.user_data = &tip_ctrl.adc_cfg;
 
 	// 等待mos完全关断延时配置
 	tip_ctrl.adc_cfg.delay_cfg.flags = 0;
@@ -174,7 +174,7 @@ int init_tip_controller(struct app *app)
 
 	// 触发adc计数
 	ret = counter_set_channel_alarm(tip_adc_counter_dev, TIP_ADC_COUNTER_CHAN,
-					&tip_ctrl.adc_cfg.tip_cfg);
+					&tip_ctrl.adc_cfg.sampling_cfg);
 	if (ret != 0) {
 		LOG_ERR("Thermocouple adc counter setup failed: %d", ret);
 		return ret;

@@ -96,14 +96,14 @@ static void port0_policy_cb_set_src_cap(const struct device *dev, const uint32_t
 		num = PDO_MAX_DATA_OBJECTS;
 	}
 
-	union pd_fixed_supply_pdo_source src_pdo;
 	for (int i = 0; i < num; i++) {
 		dpm_data->src_caps[i] = *(pdos + i);
-		src_pdo.raw_value = dpm_data->src_caps[i];
+		union pd_fixed_supply_pdo_source src_pdo = {.raw_value = *(pdos + i)};
 
 		uint16_t vol = PD_CONVERT_FIXED_PDO_VOLTAGE_TO_MV(src_pdo.voltage);
-		if (src_pdo.type == PDO_FIXED && (vol > 0 && vol <= CONFIG_PD_MAX_REQUESTED_VOLTAGE)
-                ) { // 从低到高尽可能匹配目标电压
+		if (src_pdo.type == PDO_FIXED &&
+		    (vol > 0 &&
+		     vol <= CONFIG_PD_MAX_REQUESTED_VOLTAGE)) { // 从低到高尽可能匹配目标电压
 			dpm_data->req_idx = i;
 		}
 	}
@@ -236,9 +236,15 @@ void pd_start(struct app *app)
 	app->pd_data = &port0_data;
 }
 
-bool check_pd_ready(struct port0_data_t *data)
+bool check_pd_ready(const struct port0_data_t *data)
 {
 	return atomic_test_bit(&data->ps_ready, 0);
+}
+
+uint16_t pd_get_requested_voltage(const struct port0_data_t *data)
+{
+	union pd_fixed_supply_pdo_source src_pdo = {.raw_value = data->snk_caps[data->req_idx]};
+	return PD_CONVERT_FIXED_PDO_VOLTAGE_TO_MV(src_pdo.voltage);
 }
 
 void pd_send_hard_reset()
