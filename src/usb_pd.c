@@ -243,7 +243,7 @@ bool check_pd_ready(const struct port0_data_t *data)
 
 uint16_t pd_get_requested_voltage(const struct port0_data_t *data)
 {
-	union pd_fixed_supply_pdo_source src_pdo = {.raw_value = data->snk_caps[data->req_idx]};
+	union pd_fixed_supply_pdo_source src_pdo = {.raw_value = data->src_caps[data->req_idx]};
 	return PD_CONVERT_FIXED_PDO_VOLTAGE_TO_MV(src_pdo.voltage);
 }
 
