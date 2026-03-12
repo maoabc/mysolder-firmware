@@ -1,8 +1,8 @@
 
 
 #include <zephyr/device.h>
-#include <zephyr/drivers/pwm.h>
 #include <zephyr/kernel.h>
+#include <zephyr/drivers/pwm.h>
 #include <zephyr/logging/log.h>
 
 #include "app_ui.h"
@@ -60,6 +60,7 @@ static void heater_update(const struct controller *tip_ctrl)
 	}
 	soldering_tip_pwm_set_duty_cycle(duty);
 }
+
 
 //
 

@@ -48,9 +48,10 @@ static void display_init(void)
 	display_set_orientation(display_dev, DISPLAY_ORIENTATION_ROTATED_90);
 	draw_fill_screen(display_dev, COLOR_BLACK);
 	// 开启屏幕背光
-	gpio_pin_configure_dt(&lcd_blk, GPIO_OUTPUT_HIGH | GPIO_PULL_UP);
+	gpio_pin_configure_dt(&lcd_blk, GPIO_OUTPUT_LOW | GPIO_PULL_DOWN);
 	gpio_pin_set_dt(&lcd_blk, 1);
 }
+
 
 static void sample_fetch(struct app *app)
 {
