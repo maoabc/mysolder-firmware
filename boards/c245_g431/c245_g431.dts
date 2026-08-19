@@ -307,6 +307,16 @@ stm32_lp_tick_source: &lptim1 {
 		zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
 		zephyr,resolution = <12>;
 	};
+
+	channel@10 {
+		reg = <0x10>;
+		zephyr,gain = "ADC_GAIN_1";
+		zephyr,reference = "ADC_REF_INTERNAL";
+		zephyr,vref-mv = <3300>;
+		zephyr,acquisition-time = <ADC_ACQ_TIME_MAX>;
+		zephyr,resolution = <12>;
+        zephyr,oversampling = <4>;
+	};
 };
 
 

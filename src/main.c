@@ -47,7 +47,6 @@ INPUT_CALLBACK_DEFINE(NULL, input_cb, NULL);
 int main(void)
 {
 	app_init(&app);
-	pd_start(&app);
 	temp_adc_init();
 
 	if (init_tip_controller(&app)) {
@@ -58,6 +57,7 @@ int main(void)
 		LOG_ERR("Sleep detection init failed");
 		return -1;
     }
+	pd_start(&app);
 
 	while (1) {
 		app_draw(&app);

@@ -11,7 +11,7 @@ LOG_MODULE_REGISTER(usbc, LOG_LEVEL_DBG);
 /**
  * @brief A structure that encapsulates Port data.
  */
-static struct port0_data_t port0_data = {
+static struct port_data_t port0_data = {
 	.snk_caps = {DT_FOREACH_PROP_ELEM(USBC_PORT0_NODE, sink_pdos, SINK_PDO)},
 	.snk_cap_cnt = DT_PROP_LEN(USBC_PORT0_NODE, sink_pdos),
 	.src_caps = {0},
@@ -35,7 +35,7 @@ static struct port0_data_t port0_data = {
  * @note Generally a sink application would build an RDO from the
  *	 Source Capabilities stored in the dpm_data object
  */
-static uint32_t build_rdo(struct port0_data_t *dpm_data)
+static uint32_t build_rdo(struct port_data_t *dpm_data)
 {
 	union pd_rdo rdo;
 
@@ -74,7 +74,7 @@ static uint32_t build_rdo(struct port0_data_t *dpm_data)
 /* usbc.rst callbacks start */
 static int port0_policy_cb_get_snk_cap(const struct device *dev, uint32_t **pdos, int *num_pdos)
 {
-	struct port0_data_t *dpm_data = usbc_get_dpm_data(dev);
+	struct port_data_t *dpm_data = usbc_get_dpm_data(dev);
 
 	*pdos = dpm_data->snk_caps;
 	*num_pdos = dpm_data->snk_cap_cnt;
@@ -85,7 +85,7 @@ static int port0_policy_cb_get_snk_cap(const struct device *dev, uint32_t **pdos
 static void port0_policy_cb_set_src_cap(const struct device *dev, const uint32_t *pdos,
 					const int num_pdos)
 {
-	struct port0_data_t *dpm_data;
+	struct port_data_t *dpm_data;
 	int num;
 
 	dpm_data = usbc_get_dpm_data(dev);
@@ -113,7 +113,7 @@ static void port0_policy_cb_set_src_cap(const struct device *dev, const uint32_t
 
 static uint32_t port0_policy_cb_get_rdo(const struct device *dev)
 {
-	struct port0_data_t *dpm_data = usbc_get_dpm_data(dev);
+	struct port_data_t *dpm_data = usbc_get_dpm_data(dev);
 
 	return build_rdo(dpm_data);
 }
@@ -122,7 +122,7 @@ static uint32_t port0_policy_cb_get_rdo(const struct device *dev)
 /* usbc.rst notify start */
 static void port0_notify(const struct device *dev, const enum usbc_policy_notify_t policy_notify)
 {
-	struct port0_data_t *dpm_data = usbc_get_dpm_data(dev);
+	struct port_data_t *dpm_data = usbc_get_dpm_data(dev);
 
 	switch (policy_notify) {
 	case PROTOCOL_ERROR:
@@ -233,24 +233,26 @@ void pd_start(struct app *app)
 	usbc_start(usbc_port0);
 	/* usbc.rst usbc end */
 
-	app->pd_data = &port0_data;
+	app->port = usbc_port0;
 }
 
-bool check_pd_ready(const struct port0_data_t *data)
+bool check_pd_ready(const struct device *port)
 {
+	struct port_data_t *data = usbc_get_dpm_data(port);
 	return atomic_test_bit(&data->ps_ready, 0);
 }
 
-uint16_t pd_get_requested_voltage(const struct port0_data_t *data)
+uint16_t pd_get_requested_voltage(const struct device *port)
 {
+	struct port_data_t *data = usbc_get_dpm_data(port);
 	union pd_fixed_supply_pdo_source src_pdo = {.raw_value = data->src_caps[data->req_idx]};
-	if (src_pdo.type == PDO_FIXED) {// 只处理固定档位
+	if (src_pdo.type == PDO_FIXED) { // 只处理固定档位
 		return PD_CONVERT_FIXED_PDO_VOLTAGE_TO_MV(src_pdo.voltage);
 	}
 	return 0;
 }
 
-void pd_send_hard_reset()
+void pd_send_hard_reset(const struct device *port)
 {
-	usbc_request(usbc_port0, REQUEST_PE_HARD_RESET_SEND);
+	usbc_request(port, REQUEST_PE_HARD_RESET_SEND);
 }

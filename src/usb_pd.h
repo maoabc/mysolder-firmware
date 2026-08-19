@@ -21,7 +21,7 @@
 
 
 /* usbc.rst port data object start */
-struct port0_data_t {
+struct port_data_t {
 	/** Sink Capabilities */
 	uint32_t snk_caps[DT_PROP_LEN(USBC_PORT0_NODE, sink_pdos)];
 	/** Number of Sink Capabilities */
@@ -41,10 +41,10 @@ struct app;
 
 void pd_start(struct app *app);
 
-bool check_pd_ready(const struct port0_data_t *data);
+bool check_pd_ready(const struct device *port);
 
-uint16_t pd_get_requested_voltage(const struct port0_data_t *data);
+uint16_t pd_get_requested_voltage(const struct device *port);
 
-void pd_send_hard_reset();
+void pd_send_hard_reset(const struct device *port);
 
 #endif //__USB_PD_H_

@@ -52,7 +52,7 @@ struct app {
     struct smf_ctx ctx;
     struct controller *tip_ctrl;
     enum pid_adj p_adj;
-    struct port0_data_t *pd_data;
+    const struct device *port;
     uint32_t last_time; //记录最后刷新时间  
                          
     //刷新队列，如果发生事件会发送刷新，保证及时响应按键之类

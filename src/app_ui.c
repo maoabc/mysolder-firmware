@@ -52,7 +52,6 @@ static void display_init(void)
 	gpio_pin_set_dt(&lcd_blk, 1);
 }
 
-
 static void sample_fetch(struct app *app)
 {
 	sensor_sample_fetch_chan(ina226_dev, SENSOR_CHAN_ALL);
@@ -215,19 +214,23 @@ static enum smf_state_result preview_draw(void *obj)
 	int16_t die_temp = (int16_t)(read_die_temp() * 10);
 	snprintf(buf, sizeof(buf), "TEMP:%2d.%1d", die_temp / 10, die_temp % 10);
 	draw_text(display_dev, buf, 0, y_off, Font_7x10, COLOR_RED, COLOR_BLACK);
+
+	snprintf(buf, sizeof(buf), ":%d %d", pd_get_requested_voltage(app->port) / 1000,
+		 check_pd_ready(app->port));
+	draw_text(display_dev, buf, 80, y_off, Font_7x10, COLOR_RED, COLOR_BLACK);
 	return SMF_EVENT_HANDLED;
 }
 
 static enum event preview_event(struct app *app)
 {
 	enum event evt;
-	if (check_pd_ready(app->pd_data)) { // 检测pd请求是否已完成
+	if (check_pd_ready(app->port)) { // 检测pd请求是否已完成
 		sample_fetch(app);
 		struct sensor_value val;
 		sensor_channel_get(ina226_dev, SENSOR_CHAN_VOLTAGE, &val);
 
 		// 检测实际电压跟请求电压差不超过2V
-		if (abs(pd_get_requested_voltage(app->pd_data) -
+		if (abs(pd_get_requested_voltage(app->port) -
 			(int)(sensor_value_to_double(&val) * 1000)) < 2000 &&
 		    (int)(sensor_value_to_double(&val) * 1000) >
 			    7000 // 这里随便加了7V保证请求的是9V以上档位
@@ -235,7 +238,7 @@ static enum event preview_event(struct app *app)
 			evt = EVT_HOME;
 		} else {
 			// 尝试重新请求pd
-			pd_send_hard_reset();
+			pd_send_hard_reset(app->port);
 			evt = EVT_EMPTY;
 		}
 	} else { // 什么都不做,等待pd通信完成
@@ -269,6 +272,7 @@ void app_init(struct app *app)
 		LOG_ERR("INA226 device not ready");
 		return;
 	}
+	k_fifo_init(&app->req_fifo);
 
 	memset(app, 0, sizeof(struct app));
 
