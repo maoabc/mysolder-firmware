@@ -61,7 +61,6 @@ static void heater_update(const struct controller *tip_ctrl)
 	soldering_tip_pwm_set_duty_cycle(duty);
 }
 
-
 //
 
 static const struct device *tip_adc_counter_dev = DEVICE_DT_GET(DT_NODELABEL(tip_adc_counter));

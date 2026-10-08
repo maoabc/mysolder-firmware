@@ -8,6 +8,21 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(usbc, LOG_LEVEL_DBG);
 
+/* usbc.rst port data object start */
+struct port_data_t {
+	/** Sink Capabilities */
+	uint32_t snk_caps[DT_PROP_LEN(USBC_PORT0_NODE, sink_pdos)];
+	/** Number of Sink Capabilities */
+	int snk_cap_cnt;
+	/** Source Capabilities */
+	uint32_t src_caps[PDO_MAX_DATA_OBJECTS];
+	/** Number of Source Capabilities */
+	int src_cap_cnt;
+	uint8_t req_idx;
+	/* Power Supply Ready flag */
+	atomic_t ps_ready;
+};
+
 /**
  * @brief A structure that encapsulates Port data.
  */
